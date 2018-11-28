@@ -73,7 +73,7 @@ dst = np.float32([[920,1],[920, 720],[320,720],[320,1]])
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/threaded_image)
+![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/warped_image)
 
 ####  Identify  lane-line pixels and fit their positions with a polynomial
 
@@ -83,7 +83,7 @@ leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
 left_fit = np.polyfit(lefty, leftx, 2)
 right_fit = np.polyfit(righty, rightx, 2)
  ```
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/warped_image)
+![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/output image)
 
 #### Calculate the radius of curvature of the lane and the position of the vehicle with respect to center
 
