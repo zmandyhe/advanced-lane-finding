@@ -18,7 +18,7 @@ The steps of this pipeline are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-[![Watch the video](https://i.ytimg.com/vi/yFeQ0b3oCmY/hqdefault.jpg?sqp=-oaymwEYCMQBEG5IVfKriqkDCwgBFQAAiEIYAXAB&rs=AOn4CLA3RgTk0x5mh-BBUWb1Uo5FLelMsQ)](https://www.youtube.com/yFeQ0b3oCmY)
+![original image and lane boundatary detected image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/data_lane_annoted_image_2.png)
 
 
 
@@ -32,7 +32,7 @@ I start by preparing copy of it every time I successfully detect all chessboard 
 
 I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
 
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/undistorted_image)
+![undistorted image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/undistorted_image.png)
 
 #### Color and Gradient 
 
@@ -60,7 +60,7 @@ After that, I stacked each channel, and expanded to 256 pixels, and combined the
  color_binary = np.dstack(( np.zeros_like(sxbinary), sxbinary, s_binary)) * 255
  combined_binary[(s_binary == 1) | (sxbinary == 1)] = 1
  ```
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/threaded_image)
+![threaded image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/threaded_image.png)
 
 #### Perspective Transform
 
@@ -73,7 +73,7 @@ dst = np.float32([[920,1],[920, 720],[320,720],[320,1]])
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/warped_image)
+![warped image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/warped_image.png)
 
 ####  Identify  lane-line pixels and fit their positions with a polynomial
 
@@ -83,7 +83,7 @@ leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
 left_fit = np.polyfit(lefty, leftx, 2)
 right_fit = np.polyfit(righty, rightx, 2)
  ```
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/output image)
+![output image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/output%20image.png)
 
 #### Calculate the radius of curvature of the lane and the position of the vehicle with respect to center
 
@@ -102,7 +102,7 @@ nwarped = cv2.warpPerspective(out_img, Minv, img_size , flags=cv2.INTER_LINEAR)
 result = cv2.addWeighted(img, 1, unwarped, 0.3, 0) 
 ```
 
-![original image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/data_lane_annoted_image_2)
+![Final image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/data_lane_annoted_image.png)
 
 ---
 
