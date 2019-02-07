@@ -3,9 +3,6 @@ The project is to Write a software pipeline to identify and track the traffic la
 
 When we drive, we use our eyes to decide where to go. In this project, I use a front-facing camera as my self-driving-car's eyes to  automatically detect and track lane lines using an python pipeline algorithm. This pipeline algorithm can calibrate its vision to see clearly the lane boundaries, and search lane lines using sliding window approach. It finally draw the lines boundaries so that human beings are updated with what the self-driving-car's vision and decisions. 
 
-[input video here] 
-
-
 ## Steps for Advanced Lane Finding
 The steps of this pipeline are the following:
 
@@ -117,11 +114,12 @@ for window in range(nwindows):
 * Re-center the sliding window if the number of pixels found are greater than minpix, based on the mean position of these pixels
 * Fit a polynomial to the line
 
-```    
+```
 left_fit = np.polyfit(lefty, leftx, 2)
 right_fit = np.polyfit(righty, rightx, 2)
 ```
 The sliding windows for left and right lane lines look like the following:
+
 ![output image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/output%20image.png)
 
 #### 4.2 Brute search for the first sliding window, then search from prior line position to adjust the window only when necessary
@@ -177,9 +175,9 @@ result = cv2.addWeighted(img, 1, unwarped, 0.3, 0)
 
 ### Result
 The current pipeline performs very well for project video which represents light curves conditions in a highway. It has many spaces to improve the pipeline performance for hard curved road conditions.
-* Here's a [link to project video](./project_video_output.mp4)
-* Here's a [link to challenge project video](./challenge_video_output.mp4)
-* Here is a  [link to harder challenge project video](./harder_challenge_video_output.mp4)
+* Here's a [link to project video](./video_input_and_output/project_video_output.mp4)
+* Here's a [link to challenge project video](./video_input_and_output/challenge_video_output.mp4)
+* Here is a  [link to harder challenge project video](./video_input_and_output/harder_challenge_video_output.mp4)
 
 
 ## Discussion
