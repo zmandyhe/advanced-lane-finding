@@ -77,17 +77,40 @@ I verified that my perspective transform was working as expected by drawing the 
 
 ### Lane Line Detection Algorithms
  
-#### Brute Search: Identify lane-line pixels and fit their positions with a polynomial
+#### Implement Sliding Windows and Fit a Polynomial
 **Line Finding Method: Peaks in a Histogram**
-After applying calibration, thresholding, and a perspective transform to a road image, you should have a binary image where the lane lines stand out clearly. However, you still need to decide explicitly which pixels are part of the lines and which belong to the left line and which belong to the right line. Plotting a histogram of where the binary activations occur across the image is one potential solution for this. With this histogram we are adding up the pixel values along each column in the image. In our thresholded binary image, pixels are either 0 or 1, so the two most prominent peaks in this histogram will be good indicators of the x-position of the base of the lane lines. We can use that as a starting point for where to search for the lines. From that point, we can use a sliding window, placed around the line centers, to find and follow the lines up to the top of the frame.
+After applying calibration, thresholding, and a perspective transform to a road image, you should have a binary image where the lane lines stand out clearly. I then use peaks in a histogram to decide explicitly which pixels are part of the lines and which belong to the left line and which belong to the right line. Since in our thresholded binary image, pixels are either 0 or 1, so the two most prominent peaks in this histogram are good indicators of the x-position of the base of the lane lines, and then use sliding windows moving upward in the image (further along the road) to determine where the lane lines go. 
+```
+    histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
+    midpoint = np.int(histogram.shape[0]//2)
+    leftx_base = np.argmax(histogram[:midpoint])
+    rightx_base = np.argmax(histogram[midpoint:]) + midpoint
+	```
 
 **Implement Sliding Windows and Fit a Polynomial**
-As shown in the previous animation, we can use the two highest peaks from our histogram as a starting point for determining where the lane lines are, and then use sliding windows moving upward in the image (further along the road) to determine where the lane lines go. It takes the sum of the histogram of the bottom half from the warped image. Then I used sliding windows to identify the nonzero pixels in x and y within the window, then append these indices to the lists of left and right lanes. Then I applied a second order polynomial to each using `np.polyfit`.
+After set up the the sliding window parameter and have a starting point for both lanes, the next step is to loop for nwindows, with the given window sliding left or right if it finds the mean position of activated pixels within the window to have shifted. Here's a few steps:
+* Loop through each window in nwindows
+* Find the boundaries of our current window. This is based on a combination of the current window's starting point (leftx_current and rightx_current), as well as the margin of the window
 ```
-leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
-left_fit = np.polyfit(lefty, leftx, 2)
-right_fit = np.polyfit(righty, rightx, 2)
+for window in range(nwindows):
+        # Identify window boundaries in x and y (and right and left)
+        win_y_low = binary_warped.shape[0] - (window+1)*window_height
+        win_y_high = binary_warped.shape[0] - window*window_height
+        win_xleft_low = leftx_current - margin
+        win_xleft_high = leftx_current + margin
+        win_xright_low = rightx_current - margin
+        win_xright_high = rightx_current + margin
  ```
+* Use cv2.rectangle to draw these window boundaries onto our visualization image out_img
+* Find out which activated pixels from nonzeroy and nonzerox above actually fall into the window
+* Append these to our lists left_lane_inds and right_lane_inds.
+* Re-center the sliding window if the number of pixels found are greater than minpix, based on the mean position of these pixels
+* Fit a polynomial to the line
+
+ ```    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx, 2)
+```
+
 ![output image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/output%20image.png)
 
 #### Brute search for the first sliding window, then search from prior
