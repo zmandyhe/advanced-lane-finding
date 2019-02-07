@@ -1,7 +1,7 @@
 # **Advanced Lane Finding Project**
 The project is to Write a software pipeline to identify and track the traffic lane boundaries in a video from a front-facing camera in a car. 
 
-When we drive, we use our eyes to decide where to go. In this project, I use a front-facing camera as my self-driving-car's eyes to  automatically detect and track lane lines using an python pipeline algorithm. This pipeline algorithm can calibrate its vision to see clearly the lane boundaries, and search lane lines using sliding window approach. It finally draw the lines boundaries so that human beings are updated with what the self-driving-car's vision and decisions. 
+When we drive, we use our eyes to decide where to go. In this project, I use a front-facing camera as my self-driving-car's eye to  automatically detect and track lane lines using this python pipeline. This pipeline algorithm can calibrate its vision to see clearly the lane boundaries, and search lane lines using sliding window approach. It finally draws the lines boundaries so that human beings are updated with what the self-driving-car's vision and decisions. 
 
 ## Steps for Advanced Lane Finding
 The steps of this pipeline are the following:
@@ -15,15 +15,17 @@ The steps of this pipeline are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
+Below shows the lane boundary detection drew back onto its original road image.
+
 ![original image and lane boundatary detected image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/data_lane_annoted_image.png)
 
 ### 1. Camera Calibration
 
-Due to different angles, distance to the object, the real world view have serveral major distortions such as radial distortion and tangential distortion. Due to radial distortion, straight lines will appear curved, object will apper in a wrong shape. Its effect is more as we move away from the center of image.  To stably detect lane in a self-driving-car, we need to calibrate the camera view so that we can get the correct image.
+Due to different angles, distance to the object and so on, the real world view have serveral major distortions such as radial distortion and tangential distortion. Due to radial distortion, straight lines will appear curved, object will apper in a wrong shape. Its effect is more as we move away from the center of image.  To stably detect lane in a self-driving-car, we need to calibrate the camera view so that we can get the correct image.
 
 what I did here is to use some sample images of a chess board (as it has a well defined pattern) to find its inner corners. We know its coordinates in real world space and  its coordinates in image. OpenCV provides the function to calculate the distortion coefficients to undistort the images. This parameters will be used to undistort lane views from the same camera.
 
-I start by preparing copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection. I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  
+I start by preparing copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection. I then use the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  
 ```
 ret, corners = cv2.findChessboardCorners(gray, (nx,ny),None)
 if ret == True:
@@ -95,7 +97,7 @@ After applying calibration, thresholding, and a perspective transform to a road 
 
 **Implement Sliding Windows and Fit a Polynomial**
 
-After set up the the sliding window parameter and have a starting point for both lanes, the next step I loop for each of the sliding windows (nwindows), with the given window sliding left or right and finds the mean position of activated pixels within the window. Here's a few steps:
+After set up the the sliding window parameter and have a starting point for both lanes, the next step I loop for each of the sliding window (nwindows), with the given window sliding left or right and finds the mean position of activated pixels within the window. Here's a few steps:
 * Loop through each window in nwindows
 * Find the boundaries of our current window
 ```
@@ -124,9 +126,9 @@ The sliding windows for left and right lane lines look like the following:
 
 #### 4.2 Brute search for the first sliding window, then search from prior line position to adjust the window only when necessary
 After using sliding windows to track the lane lines out into the distance, but may seem inefficient, 
-An improved apporach is that since the lines don't necessarily move a lot from frame to frame, rather than  using the full algorithm from before and starting fresh on every frame, I used anothere apporach here is instead I just searched in a margin around the previous line position from the previous window. When I lose track of the lines, the algorithem will go back to brute sliding windows search to rediscover the lines.
+An improved apporach is that since the lines don't necessarily move a lot from frame to frame, rather than  using the full algorithm from before and starting fresh on every frame, I use another apporach here is instead I just search in a margin around the previous line position from the previous window. When I lose track of the lines, the algorithem will go back to brute search sliding windows to rediscover the lines.
 
-The left_lane_inds and right_lane_indsto hold the pixel values contained within the boundaries of a given sliding window. This time, I take the polynomial functions we fit before (left_fit and right_fit), along with a hyperparameter margin, to determine which activated pixels fall into the area of search based on activated x-values within the +/- margin of our polynomial function.
+The left_lane_inds and right_lane_inds to hold the pixel values contained within the boundaries of a given sliding window. This time, I take the polynomial functions we fit before (left_fit and right_fit), along with a hyperparameter margin, to determine which activated pixels fall into the area of search based on activated x-values within the +/- margin of our polynomial function.
 
 ```
     leftx = nonzerox[left_lane_inds]
@@ -137,13 +139,13 @@ The left_lane_inds and right_lane_indsto hold the pixel values contained within 
     left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
 ```
 	
-After located the lane line pixels, I used their x and y pixel positions to fit a second order polynomial curve: f(y) = Ay^2 + By + Cf(y)=Ay +By+C. The output looks like the following:
+After located the lane line pixels, I used their x and y pixel positions to fit a second order polynomial curve: f(y) = Ay^2 + By + C, f(y)=Ay +By+C. The output looks like the following:
 
 ![output image](https://github.com/zmandyhe/advanced-lane-finding/blob/master/output_images/search-from-prior.png)
 
 #### 5. Calculate the radius of lane curvature and the position of the vehicle with respect to center
 
-I firstly defined conversion variables in x and y from pixels  to meter by considering the physical lane is about 30 meters long and 3.7 meters wide (U.S. regulations) and the image pixel is about (700,720).  Then fit to a second polynominal to pixel positions in each lane line. Then I used below math model to calculation of R_curve (radius of curvature).
+I firstly defined conversion variables in x and y from pixels  to meter by considering the physical lane is about 30 meters long and 3.7 meters wide (U.S. regulations) and the image pixel is about (700,720).  Then fit to a second polynominal to pixel positions in each lane line. Then I use below math model to calculation of R_curve (radius of curvature).
 
 ```
 ym_per_pix = 30/720 # meters per pixel in y dimension
@@ -181,12 +183,13 @@ The current pipeline performs very well for project video which represents light
 
 
 ## Discussion
-This is the most challenging and fun project that used many computer vision algorithms. As the project result has demonstrated, it has many opportunities to improve the lane detection accuracies. I think in order to have a better accuracy for hard curved road, the pre-processing and fine tuning the image/frame data is essential, particularly to fine tune the thresholding binary image for color and space gradients. I can see in my project, for test5.jpg where contains many noises (nearby trees), the result for thresholding binary image to highlight lane lines has a great space to improve, even although the same parameters for thresholding other test images work very well.
+This is the most challenging and fun project that used many computer vision algorithms. As the project result has demonstrated, it has many opportunities to improve the lane detection accuracies for harder road conditions. I think in order to have a better accuracy for hard curved road, the pre-processing the image/frame data and fine tuning parameters are essential, particularly to fine tune the thresholding binary image for color and space gradients. I can see in my project, for test5.jpg where contains many noises (nearby trees), the result for thresholding binary image to highlight lane lines has a great space to improve, even although the same parameters for thresholding other test images work very well.
 
 It is important to undistort the video frames for the camera, it suggests to use at least 20 images to calibrate the camera to compute a stable camera matrix and distortion coefficients. Always test the camera matrix and distrotion coefficients on more pictures, to ensure the computation of the calibration is correct. 
 
-My first iteration of the project missed some curved lane line for the project video. There are two causes. The first one is due to the unreliable perspective transform matrix, it needs some experiments to make it right. In that iteration, I picked a random road picture to get the perspective transformation matrix. Which turns out not a good strategy. In my second iteration, I adjusted my strategy, and pick a straight line road picture to calculate the transformation matrix, as straight lines will remain straight even after the transformation. To find this transformation matrix, I picked 4 points on the input image and corresponding points on the output image. Among these 4 points, 3 of them should not be collinear. Then transformation matrix can be found by the applying the function cv2.getPerspectiveTransform(). There are algorithms to calculate the matrix for perspective transform, I will search and give it a try.
+My first iteration of the project missed some curved lane line for the project video. There are two causes. The first one is due to the unreliable perspective transform matrix, it took me some experiments to make it right. In that iteration, I picked a random road picture to get the perspective transformation matrix. Which turned out not a good strategy. In my second iteration, I adjusted my strategy, and picked a straight line road picture to calculate the transformation matrix, as straight lines will remain straight even after the transformation. To find this transformation matrix, I picked 4 points on the input image and corresponding points on the output image. Among these 4 points, 3 of them should not be collinear. Then transformation matrix can be found by the applying the function cv2.getPerspectiveTransform(). There are algorithms to calculate the matrix for perspective transform, I will search and give it a try.
+My first iteration of the project missed some curved lane line for the project video. There are two causes. The first one is due to the unreliable perspective transform matrix, it took me some experiments to make it right. In that iteration, I picked a random road picture to get the perspective transformation matrix. Which turns out not a good strategy. In my second iteration, I adjusted my strategy, and pick a straight line road picture to calculate the transformation matrix, as straight lines will remain straight even after the transformation. To find this transformation matrix, I picked 4 points on the input image and corresponding points on the output image. Among these 4 points, 3 of them should not be collinear. Then transformation matrix can be found by the applying the function cv2.getPerspectiveTransform(). There are algorithms to calculate the matrix for perspective transform, I will search and give it a try later.
 
 It is worth to mention that I tested the warp result on other straight stretch of road as I'll be able to measure the warp success by seeing the lanes parallel to each other. 
 
-I also experimented sliding window by applying convolution, the results were not improved than the two apporaches used in this project. I like this project and will experiment other approaches to work on complicated road conditions.
+I also experimented sliding window by applying convolution, the result was not better than the two apporaches used in this project. I like this project and will continue to experiment to work on complicated road conditions.
